@@ -1,0 +1,249 @@
+/* Réinitialisation de base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Arrière-plan global */
+body {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+/* Conteneur principal */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* En-tête */
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+h1 {
+    color: #4a4a4a;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Formulaire de tâches (page principale) */
+.task-form {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.task-form select,
+.task-form input,
+.task-form button {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.8rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, opacity 0.3s ease;
+    background-color: white;
+    opacity: 1; /* S’assure que le bouton est toujours visible */
+}
+
+/* Personnalisation du select */
+.task-form select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-size: 1em;
+}
+
+.task-form select:focus,
+.task-form input:focus {
+    outline: none;
+    border-color: #6e8efb;
+}
+
+.task-form select:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* Bouton (ex: "Ajouter") toujours visible */
+button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #6e8efb;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 1; /* Important pour garder le bouton visible */
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+
+button:hover {
+    background-color: #5d7ce0;
+    opacity: 1; /* Empêche la disparition au survol */
+}
+
+/* Zone d'affichage des tâches */
+.tasks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-btn {
+    background-color: #f0f0f0;
+    color: #4a4a4a;
+}
+
+.filter-btn.active {
+    background-color: #a777e3;
+}
+
+.task-list {
+    list-style: none;
+}
+
+.task-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.task-item:hover {
+    transform: translateY(-2px);
+}
+
+.task-info {
+    flex: 1;
+}
+
+.task-name {
+    font-weight: bold;
+    color: #4a4a4a;
+    margin-bottom: 0.3rem;
+}
+
+.task-assignee {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.task-actions {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.task-actions button {
+    padding: 0.5rem;
+    font-size: 1rem;
+}
+
+.complete-btn {
+    background-color: #4CAF50;
+}
+
+.delete-btn {
+    background-color: #ff4757;
+}
+
+.task-item.completed .task-name {
+    text-decoration: line-through;
+    color: #888;
+}
+
+/* Page planification (si vous la mettez dans ce même fichier) */
+.planification-container {
+    margin-top: 2rem;
+}
+
+.room-block {
+    margin-bottom: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1rem;
+    background-color: #fff;
+}
+
+.room-block h2 {
+    margin-bottom: 0.5rem;
+}
+
+.room-block ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.room-block li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.room-block select {
+    min-width: 150px;
+    margin-left: 1rem;
+}
+
+/* Sous-liste des tâches dans la gestion des pièces */
+.sub-task-list {
+    margin: 0.5rem 0 0 1.5rem;
+    list-style: disc;
+}
+
+.sub-task-list li {
+    margin-bottom: 0.3rem;
+}
+
+/* Adaptations responsive */
+@media (max-width: 600px) {
+    .task-form {
+        flex-direction: column;
+    }
+
+    .tasks-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .filter-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .task-item {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .task-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

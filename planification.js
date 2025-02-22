@@ -1,58 +1,40 @@
 /**************************************************************
- * planification.js
+ * planification.js - Page Planification
  **************************************************************/
 
 const supabase = window.supabaseClient;
 
-/**
- * Récupère toutes les pièces, puis toutes les tâches,
- * et associe tasks[] à chaque pièce.
- */
 async function fetchRoomsWithTasks() {
-  // 1) Récupérer toutes les pièces
-  const { data: allRooms, error: err1 } = await supabase
-    .from('rooms')
-    .select('*');
+  // Récupère toutes les pièces
+  const { data: allRooms, error: err1 } = await supabase.from('rooms').select('*');
   if (err1) {
     console.error(err1);
     return [];
   }
-
-  // 2) Récupérer toutes les tâches (optionnel : join rooms)
-  const { data: allTasks, error: err2 } = await supabase
-    .from('tasks')
-    .select('*');
+  // Récupère toutes les tâches
+  const { data: allTasks, error: err2 } = await supabase.from('tasks').select('*');
   if (err2) {
     console.error(err2);
     return [];
   }
-
-  // 3) Pour chaque room, on associe tasks = allTasks.filter(t => t.room_id === room.id)
+  // Associe pour chaque room ses tâches
   const roomsWithTasks = allRooms.map(room => ({
     ...room,
     tasks: allTasks.filter(t => t.room_id === room.id)
   }));
-
   return roomsWithTasks;
 }
 
-/**
- * Affiche la planification : liste de toutes les pièces,
- * et sous-liste des tâches de chaque pièce.
- */
 async function renderPlanification() {
   const container = document.getElementById('planificationContainer');
   container.innerHTML = '';
-
   const rooms = await fetchRoomsWithTasks();
   rooms.forEach(room => {
     const roomDiv = document.createElement('div');
     roomDiv.classList.add('room-block');
-
     const roomTitle = document.createElement('h2');
     roomTitle.textContent = room.name;
     roomDiv.appendChild(roomTitle);
-
     if (room.tasks && room.tasks.length > 0) {
       const ul = document.createElement('ul');
       room.tasks.forEach(task => {
@@ -66,7 +48,6 @@ async function renderPlanification() {
       p.textContent = 'Aucune tâche pour cette pièce.';
       roomDiv.appendChild(p);
     }
-
     container.appendChild(roomDiv);
   });
 }

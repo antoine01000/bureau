@@ -11,9 +11,9 @@
   <div class="container">
     <header>
       <h1>🏠 Gestion des Tâches Ménagères</h1>
-      <!-- Lien existant vers la page d’administration -->
+      <!-- Lien vers la page Admin -->
       <a href="admin.html" class="admin-btn"><i class="fas fa-cog"></i> Gérer le système</a>
-      <!-- Nouveau lien vers la page de planification -->
+      <!-- Lien vers la page Planification -->
       <a href="planification.html" class="admin-btn"><i class="fas fa-calendar"></i> Planification</a>
     </header>
 
@@ -60,6 +60,17 @@
       <ul id="taskList" class="task-list"></ul>
     </div>
   </div>
+
+  <!-- 1) CDN Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  <!-- 2) Initialisation Supabase -->
+  <script>
+    const { createClient } = window.supabase;
+    const SUPABASE_URL = "https://lrfbyomtntbwgvjbelnj.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS...";
+    window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+  <!-- 3) Votre script principal (mis à jour pour Supabase) -->
   <script src="script.js"></script>
 </body>
 </html>

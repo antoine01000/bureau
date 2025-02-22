@@ -60,6 +60,17 @@
             </section>
         </div>
     </div>
+
+    <!-- 1) CDN Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+    <!-- 2) Initialisation Supabase -->
+    <script>
+      const { createClient } = window.supabase;
+      const SUPABASE_URL = "https://lrfbyomtntbwgvjbelnj.supabase.co";
+      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS...";
+      window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
+    <!-- 3) Votre script principal (admin.js) mis à jour pour Supabase -->
     <script src="admin.js"></script>
 </body>
 </html>

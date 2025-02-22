@@ -1,208 +1,258 @@
-// Chargement des données depuis le localStorage ou valeurs par défaut
-let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-let members = JSON.parse(localStorage.getItem('people')) || ['John', 'Marie', 'Pierre'];
-let rooms = JSON.parse(localStorage.getItem('rooms')) || [
-  { id: 'cuisine', name: 'Cuisine', tasks: [] },
-  { id: 'salon', name: 'Salon', tasks: [] },
-  { id: 'salle_de_bain', name: 'Salle de bain', tasks: [] },
-  { id: 'chambre', name: 'Chambre', tasks: [] },
-  { id: 'bureau', name: 'Bureau', tasks: [] },
-  { id: 'buanderie', name: 'Buanderie', tasks: [] },
-  { id: 'garage', name: 'Garage', tasks: [] },
-  { id: 'entree', name: 'Entrée', tasks: [] },
-  { id: 'toilettes', name: 'Toilettes', tasks: [] },
-  { id: 'exterieur', name: 'Extérieur', tasks: [] }
-];
+/**************************************************************
+ * admin.js
+ **************************************************************/
+const supabase = window.supabaseClient
 
-// Liste de suggestions de tâches par pièce
+// Suggestions de nettoyage par pièce (pour la liste d’options)
 const cleaningTasks = {
-  cuisine: [
-    'Faire la vaisselle',
-    'Nettoyer le plan de travail',
-    'Balayer le sol',
-    'Vider la poubelle',
-    'Nettoyer le réfrigérateur'
-  ],
-  salon: [
-    'Passer l’aspirateur',
-    'Dépoussiérer les meubles',
-    'Nettoyer les vitres'
-  ],
-  salle_de_bain: [
-    'Nettoyer la douche/baignoire',
-    'Nettoyer le lavabo',
-    'Nettoyer le miroir',
-    'Laver le sol'
-  ],
-  chambre: [
-    'Faire le lit',
-    'Changer les draps',
-    'Passer l’aspirateur'
-  ],
-  bureau: [
-    'Dépoussiérer le bureau',
-    'Organiser les documents'
-  ],
-  buanderie: [
-    'Faire une lessive',
-    'Plier le linge'
-  ],
-  garage: [
-    'Balayer le sol',
-    'Ranger les outils'
-  ],
-  entree: [
-    'Balayer le sol',
-    'Ranger les chaussures'
-  ],
-  toilettes: [
-    'Nettoyer la cuvette',
-    'Nettoyer le lavabo'
-  ],
-  exterieur: [
-    'Balayer la terrasse',
-    'Arroser les plantes'
-  ]
+  cuisine: [...],
+  salon: [...],
+  /* ... */
+  exterieur: [...]
 };
 
 // Récupération des éléments du DOM
+const peopleList = document.getElementById('peopleList');
+const roomsList = document.getElementById('roomsList');
+const tasksList = document.getElementById('tasksList');
 const roomSelect = document.getElementById('roomSelect');
-const taskSuggestions = document.getElementById('taskSuggestions');
-const taskInput = document.getElementById('taskInput');
-const assigneeSelect = document.getElementById('assigneeSelect');
-const statusSelect = document.getElementById('statusSelect');
-const addTaskButton = document.getElementById('addTask');
-const taskList = document.getElementById('taskList');
-const filterButtons = document.querySelectorAll('.filter-btn');
+const taskSuggestionsAdmin = document.getElementById('taskSuggestionsAdmin');
 
-// Fonction pour remplir le select des pièces
-const renderRooms = () => {
+// Fonctions Supabase - People
+async function fetchPeople() {
+  const { data, error } = await supabase.from('people').select('*')
+  if (error) {
+    console.error('fetchPeople error:', error)
+    return []
+  }
+  return data
+}
+async function insertPerson(name) {
+  await supabase.from('people').insert([{ name }])
+}
+async function deletePersonById(id) {
+  await supabase.from('people').delete().eq('id', id)
+}
+
+// Fonctions Supabase - Rooms
+async function fetchRooms() {
+  const { data, error } = await supabase.from('rooms').select('*')
+  if (error) {
+    console.error('fetchRooms error:', error)
+    return []
+  }
+  return data
+}
+async function insertRoom(name) {
+  await supabase.from('rooms').insert([{ name }])
+}
+async function deleteRoomById(id) {
+  await supabase.from('rooms').delete().eq('id', id)
+}
+
+// Fonctions Supabase - Tasks
+async function fetchTasksByRoom(roomId) {
+  // Sélectionne toutes les tâches pour une pièce donnée (room_id = roomId)
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('room_id', roomId)
+  if (error) {
+    console.error('fetchTasksByRoom error:', error)
+    return []
+  }
+  return data
+}
+async function insertTask(name, roomId) {
+  await supabase.from('tasks').insert([{ name, room_id: roomId }])
+}
+async function deleteTaskById(taskId) {
+  await supabase.from('tasks').delete().eq('id', taskId)
+}
+
+// ======================
+// Rendu People
+// ======================
+async function renderPeople() {
+  const people = await fetchPeople()
+  peopleList.innerHTML = ''
+  people.forEach(person => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      ${person.name}
+      <div class="item-actions">
+        <button class="delete-btn" data-id="${person.id}">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    `;
+    peopleList.appendChild(li);
+  });
+
+  // Gérer la suppression
+  peopleList.querySelectorAll('button.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id
+      if (confirm('Supprimer cette personne ?')) {
+        await deletePersonById(id)
+        renderPeople()
+      }
+    })
+  })
+}
+
+// ======================
+// Rendu Rooms
+// ======================
+async function renderRooms() {
+  const rooms = await fetchRooms()
+  roomsList.innerHTML = ''
   roomSelect.innerHTML = '<option value="">Choisir une pièce...</option>';
+
   rooms.forEach(room => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      ${room.name}
+      <div class="item-actions">
+        <button class="delete-btn" data-id="${room.id}">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    `;
+    roomsList.appendChild(li);
+
+    // Ajout dans le select
     const option = document.createElement('option');
     option.value = room.id;
     option.textContent = room.name;
     roomSelect.appendChild(option);
   });
-};
 
-// Fonction pour remplir le select des personnes
-const renderMembers = () => {
-  assigneeSelect.innerHTML = '<option value="">Choisir une personne...</option>';
-  members.forEach(member => {
-    const option = document.createElement('option');
-    option.value = member;
-    option.textContent = member;
-    assigneeSelect.appendChild(option);
-  });
-};
+  // Suppression d’une room
+  roomsList.querySelectorAll('button.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id
+      if (confirm('Supprimer cette pièce ?')) {
+        await deleteRoomById(id)
+        renderRooms()
+        tasksList.innerHTML = '' // nettoyer l’affichage si besoin
+      }
+    })
+  })
+}
 
-// Mise à jour des suggestions de tâche en fonction de la pièce sélectionnée
-roomSelect.addEventListener('change', () => {
-  const selectedRoomId = roomSelect.value;
-  taskSuggestions.innerHTML = '';
-  if (selectedRoomId) {
-    const suggestions = cleaningTasks[selectedRoomId];
-    taskSuggestions.disabled = false;
-    if (suggestions && suggestions.length > 0) {
-      taskSuggestions.innerHTML = `<option value="">Choisir une tâche suggérée...</option>` +
-        suggestions.map(task => `<option value="${task}">${task}</option>`).join('');
-    } else {
-      taskSuggestions.innerHTML = `<option value="">Aucune suggestion</option>`;
-    }
-  } else {
-    taskSuggestions.disabled = true;
-    taskSuggestions.innerHTML = `<option value="">Sélectionnez d'abord une pièce...</option>`;
-  }
-});
+// ======================
+// Rendu des tâches (pour la pièce sélectionnée)
+// ======================
+async function renderTasks() {
+  tasksList.innerHTML = ''
+  const selectedRoomId = roomSelect.value
+  if (!selectedRoomId) return
 
-// Remplissage automatique du champ de tâche lorsque l'utilisateur choisit une suggestion
-taskSuggestions.addEventListener('change', () => {
-  if (taskSuggestions.value) {
-    taskInput.value = taskSuggestions.value;
-  }
-});
-
-// Sauvegarde des tâches dans le localStorage
-const saveTasks = () => {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-};
-
-// Affichage de la liste des tâches
-const renderTasks = (filter = 'all') => {
-  taskList.innerHTML = '';
-  let filteredTasks = tasks;
-  if (filter !== 'all') {
-    filteredTasks = tasks.filter(task => task.status === filter);
-  }
-  filteredTasks.forEach(task => {
-    const li = document.createElement('li');
-    li.className = 'task-item';
+  // On récupère les tâches pour roomId
+  const tasks = await fetchTasksByRoom(selectedRoomId)
+  tasks.forEach(task => {
+    const li = document.createElement('li')
     li.innerHTML = `
-      <div class="task-info">
-        <div class="task-name">${task.name}</div>
-        <div class="task-assignee">${task.assignee}</div>
-        <div class="task-room">${task.room}</div>
-        <div class="task-status">${task.status}</div>
-      </div>
-      <div class="task-actions">
-        <button class="delete-btn" onclick="deleteTask(${task.id})">
+      ${task.name}
+      <div class="item-actions">
+        <button class="delete-btn" data-task-id="${task.id}">
           <i class="fas fa-trash"></i>
         </button>
       </div>
-    `;
-    taskList.appendChild(li);
-  });
-};
+    `
+    tasksList.appendChild(li)
+  })
 
-// Ajout d'une nouvelle tâche
-addTaskButton.addEventListener('click', () => {
-  const roomId = roomSelect.value;
-  const taskName = taskInput.value.trim();
-  const assignee = assigneeSelect.value;
-  const status = statusSelect.value;
-  
-  if (roomId && taskName && assignee && status) {
-    const roomName = roomSelect.options[roomSelect.selectedIndex].text;
-    const newTask = {
-      id: Date.now(),
-      name: taskName,
-      assignee: assignee,
-      room: roomName,
-      status: status
-    };
-    tasks.push(newTask);
-    saveTasks();
-    renderTasks();
-    // Réinitialisation du formulaire
-    taskInput.value = '';
-    roomSelect.value = '';
-    taskSuggestions.disabled = true;
-    taskSuggestions.innerHTML = `<option value="">Sélectionnez d'abord une pièce...</option>`;
-    assigneeSelect.value = '';
-    statusSelect.value = '';
-  } else {
-    alert('Veuillez remplir tous les champs.');
+  // Gérer la suppression
+  tasksList.querySelectorAll('button.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const taskId = btn.dataset.taskId
+      if (confirm('Supprimer cette tâche ?')) {
+        await deleteTaskById(taskId)
+        renderTasks()
+      }
+    })
+  })
+}
+
+// ======================
+// Gestion Event Listeners
+// ======================
+
+// Ajouter une personne
+document.getElementById('addPerson').addEventListener('click', async () => {
+  const input = document.getElementById('newPersonName')
+  const name = input.value.trim()
+  if (name) {
+    await insertPerson(name)
+    input.value = ''
+    renderPeople()
   }
-});
+})
 
-// Fonction globale pour supprimer une tâche
-const deleteTask = (taskId) => {
-  tasks = tasks.filter(task => task.id !== taskId);
-  saveTasks();
-  renderTasks();
-};
+// Ajouter une room
+document.getElementById('addRoom').addEventListener('click', async () => {
+  const input = document.getElementById('newRoomName')
+  const name = input.value.trim()
+  if (name) {
+    await insertRoom(name)
+    input.value = ''
+    renderRooms()
+  }
+})
 
-// Filtrage des tâches via les boutons
-filterButtons.forEach(button => {
-  button.addEventListener('click', () => {
-    filterButtons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
-    renderTasks(button.dataset.filter);
-  });
-});
+// Changement de pièce => on actualise la liste des tâches
+roomSelect.addEventListener('change', async () => {
+  const selectedRoomId = roomSelect.value
+  // Mise à jour des suggestions
+  taskSuggestionsAdmin.innerHTML = ''
+  if (selectedRoomId) {
+    // Retrouver le nom de la pièce
+    const opt = roomSelect.options[roomSelect.selectedIndex]
+    const roomName = opt.textContent.toLowerCase().replace(/\s/g, '_').replace(/[éèê]/g, 'e')
+    const suggestions = cleaningTasks[roomName]
+    taskSuggestionsAdmin.disabled = false
+    if (suggestions && suggestions.length > 0) {
+      taskSuggestionsAdmin.innerHTML = `<option value="">Choisir une tâche suggérée...</option>` +
+        suggestions.map(task => `<option value="${task}">${task}</option>`).join('')
+    } else {
+      taskSuggestionsAdmin.innerHTML = `<option value="">Aucune suggestion</option>`
+    }
 
-// Initialisation de l'affichage
-renderRooms();
-renderMembers();
-renderTasks();
+    // Actualisation de la liste de tâches
+    renderTasks()
+  } else {
+    taskSuggestionsAdmin.disabled = true
+    taskSuggestionsAdmin.innerHTML = `<option value="">Sélectionnez d'abord une pièce...</option>`
+    tasksList.innerHTML = ''
+  }
+})
+
+// Choix d’une suggestion => remplir l’input
+taskSuggestionsAdmin.addEventListener('change', () => {
+  if (taskSuggestionsAdmin.value) {
+    document.getElementById('newTaskName').value = taskSuggestionsAdmin.value
+  }
+})
+
+// Ajouter une nouvelle tâche
+document.getElementById('addTask').addEventListener('click', async () => {
+  const roomId = roomSelect.value
+  const input = document.getElementById('newTaskName')
+  const taskName = input.value.trim()
+  if (roomId && taskName) {
+    await insertTask(taskName, roomId)
+    input.value = ''
+    renderTasks()
+  }
+})
+
+// ======================
+// Initialisation
+// ======================
+;(async function initAdmin() {
+  await renderPeople()
+  await renderRooms()
+  // tasksList se mettra à jour si on choisit une pièce
+})()

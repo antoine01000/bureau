@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Planification des Tâches</title>
   <link rel="stylesheet" href="styles.css"> 
-  <!-- ou planification.css, admin.css, etc. -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -20,6 +19,16 @@
     </div>
   </div>
 
+  <!-- 1) CDN Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  <!-- 2) Initialisation Supabase -->
+  <script>
+    const { createClient } = window.supabase;
+    const SUPABASE_URL = "https://lrfbyomtntbwgvjbelnj.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS...";
+    window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+  <!-- 3) Votre script principal (planification.js) mis à jour pour Supabase -->
   <script src="planification.js"></script>
 </body>
 </html>
